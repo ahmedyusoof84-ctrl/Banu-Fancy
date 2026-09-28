@@ -1,0 +1,13 @@
+import {test,before,after} from 'node:test';
+import assert from 'node:assert/strict';
+import request from 'supertest';
+import {createDatabase,one,rows} from '../server/db.js';
+import {createApp,bootstrap} from '../server/app.js';
+let db,admin,created;
+const product={name:'Custom product',code:'CUSTOM-1',barcode:'CUSTOM-1',purchase_price:100,selling_price:200,category_name:'School essentials',brand_name:'My brand',supplier_name:'My local supplier',unit:'bundle',quantity:3};
+before(async()=>{db=await createDatabase({dir:':memory:',url:''});await bootstrap(db,{email:'admin@test.local',password:'Test-only-password!'});admin=request.agent(createApp(db,{secret:'a-test-secret-that-is-at-least-32-characters'}));await admin.post('/api/auth/login').send({email:'admin@test.local',password:'Test-only-password!'}).expect(200);});
+after(async()=>await db.close());
+test('typed product options create durable related records and preserve custom units',async()=>{created=(await admin.post('/api/products').send(product).expect(201)).body;assert.equal(created.unit,'bundle');for(const [field,table,name] of [['category','categories',product.category_name],['brand','brands',product.brand_name],['supplier','suppliers',product.supplier_name]]){const r=await one(db,`SELECT * FROM ${table} WHERE id=$1`,[created[field+'_id']]);assert.equal(r.name,name);}const reloaded=(await admin.get('/api/products')).body[0];assert.equal(reloaded.supplier,product.supplier_name);});
+test('existing names are reused regardless of case and whitespace',async()=>{const next=(await admin.post('/api/products').send({...product,code:'CUSTOM-2',barcode:'CUSTOM-2',supplier_name:'  my LOCAL supplier  ',brand_name:'MY BRAND'}).expect(201)).body;assert.equal(next.supplier_id,created.supplier_id);assert.equal(next.brand_id,created.brand_id);assert.equal((await rows(db,'SELECT * FROM suppliers')).length,1);});
+test('editing options supports new names, clearing optional fields, and custom units',async()=>{const updated=(await admin.put('/api/products/'+created.id).send({...product,category_name:'',brand_name:'',supplier_name:'New wholesaler',unit:'sheet'}).expect(200)).body;assert.equal(updated.category_id,null);assert.equal(updated.brand_id,null);assert.equal(updated.unit,'sheet');assert.notEqual(updated.supplier_id,created.supplier_id);assert.equal(updated.quantity,3);});
+test('failed product save rolls back newly typed options',async()=>{await admin.post('/api/products').send({...product,supplier_name:'Should not be saved'}).expect(409);assert.equal((await rows(db,'SELECT * FROM suppliers WHERE name=$1',['Should not be saved'])).length,0);});

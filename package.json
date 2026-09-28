@@ -1,0 +1,41 @@
+{
+  "name": "smart-retail-pos",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"node --watch server/index.js\" \"vite --host 127.0.0.1\"",
+    "build": "vite build --configLoader runner",
+    "start": "node server/index.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
+    "backup": "node scripts/backup.js"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.3.10",
+    "@tailwindcss/vite": "^4.1.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.5.0",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "jsbarcode": "^3.12.1",
+    "lucide-react": "^0.468.0",
+    "pdfkit": "^0.16.0",
+    "pg": "^8.16.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.1.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.0",
+    "concurrently": "^9.1.0",
+    "supertest": "^7.1.0",
+    "vite": "^6.3.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}
