@@ -86,6 +86,8 @@ Admin Settings supports download and restore. Restore requires the current admin
 
 This application preserves the requested Express and PostgreSQL architecture. It has **not been deployed** to Sites: Sites' Worker hosting does not directly run this Node/Express server or its TCP PostgreSQL connection. Deploy the supplied Docker image to a Node/container host with PostgreSQL and HTTPS.
 
+For the prepared free Render web service with an external PostgreSQL database, follow [DEPLOYMENT.md](DEPLOYMENT.md). Its local backup files are temporary, so save independent off-site backups.
+
 1. Create a dedicated PostgreSQL database and set `DATABASE_URL` (with TLS options appropriate to the provider).
 2. Generate `JWT_SECRET`, for example `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`, and store it as a deployment secret.
 3. Set `NODE_ENV=production`, `APP_ORIGIN=https://your-shop-domain`, `HOST=0.0.0.0`, bootstrap credentials, and a persistent backup directory.

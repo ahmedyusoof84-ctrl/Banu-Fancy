@@ -1,37 +1,25 @@
-# A durable Render deployment. Creating these resources uses paid compute and storage.
-# The shop's existing local data must be restored through Settings after deployment.
+# Free Render web service. Supply a persistent external PostgreSQL DATABASE_URL,
+# such as a Neon Free project. Never rely on the web service's ephemeral disk.
+# Restore existing shop data through Settings after deployment.
 services:
   - type: web
     name: smart-retail
     runtime: docker
-    plan: 0.5c-512mb
+    plan: free
     region: singapore
     healthCheckPath: /api/health
-    disk:
-      name: shop-backups
-      mountPath: /app/backups
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
       - key: HOST
         value: 0.0.0.0
       - key: DATABASE_URL
-        fromDatabase:
-          name: smart-retail-db
-          property: connectionString
+        sync: false
+      - key: REQUIRE_PERSISTENT_DB
+        value: 'true'
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-      - key: BACKUP_DIR
-        value: /app/backups
-databases:
-  - name: smart-retail-db
-    plan: 0.1c-256mb
-    region: singapore
-    databaseName: smart_retail
-    user: retail
-    ipAllowList: []

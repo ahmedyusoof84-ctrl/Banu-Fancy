@@ -7,6 +7,7 @@ import {createApp,bootstrap} from './app.js';
 import {saveBackup} from './backup.js';
 const production=process.env.NODE_ENV==='production';
 const origin=process.env.APP_ORIGIN||(process.env.RENDER==='true'?process.env.RENDER_EXTERNAL_URL:undefined);
+if(process.env.REQUIRE_PERSISTENT_DB==='true'&&!process.env.DATABASE_URL)throw new Error('DATABASE_URL is required for this hosted deployment.');
 let secret=process.env.JWT_SECRET;
 if(!secret){if(production)throw new Error('JWT_SECRET is required in production.');const dir=path.resolve(process.env.DATA_DIR||'./data');await fs.mkdir(dir,{recursive:true});const file=path.join(dir,'.jwt-secret');try{secret=await fs.readFile(file,'utf8');}catch{secret=crypto.randomBytes(48).toString('hex');await fs.writeFile(file,secret,{mode:0o600});}}
 if(secret.length<32)throw new Error('JWT_SECRET must contain at least 32 characters.');
